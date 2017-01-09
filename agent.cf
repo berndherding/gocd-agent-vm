@@ -1,0 +1,150 @@
+{
+  "Description": "GoCD Agent Cluster",
+
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Parameters" : {
+    "VpcId" : {
+      "Type" :  "String"
+    },
+    "ImageId" : {
+      "Type" :  "String"
+    },
+    "DockerImage" : {
+      "Type" :  "String"
+    },
+    "EcsAuth" : {
+      "Type":   "String",
+      "NoEcho" : true
+    },
+    "EcsEmail" : {
+      "Type" :  "String"
+    },
+    "GoServerUrl" : {
+      "Type" :  "String"
+    },
+    "GithubPemKey" : {
+      "Type" :  "String",
+      "NoEcho":  true
+    }
+  },
+
+  "Resources": {
+
+    "Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "eu-central-1b",
+        "IamInstanceProfile": "ecsInstanceRole",
+        "ImageId": { "Ref": "ImageId" },
+        "InstanceType": "t2.small",
+        "KeyName": "gocd",
+        "Monitoring": "true",
+        "SecurityGroupIds": [ { "Ref": "SecurityGroup" } ],
+        "Tags": [
+          { "Key": "Name", "Value": { "Ref": "AWS::StackName" } }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [ "",
+              [
+                "#!/bin/bash\n",
+
+                "export ECS_AUTH=", { "Ref": "EcsAuth" }, "\n",
+                "export ECS_EMAIL=", { "Ref": "EcsEmail" }, "\n",
+                "export ECS_CLUSTER=", { "Ref": "Cluster" }, "\n",
+
+                "cat <<EOF > /etc/ecs/ecs.config\n",
+                "ECS_LOGLEVEL=debug\n",
+                "ECS_CLUSTER=$ECS_CLUSTER\n",
+                "ECS_ENGINE_AUTH_TYPE=dockercfg\n",
+                "ECS_ENGINE_AUTH_DATA={\"https://index.docker.io/v1/\":{\"auth\":\"$ECS_AUTH\",\"email\":\"$ECS_EMAIL\"}}\n",
+                "EOF"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+    "SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Go Agent",
+        "VpcId": { "Ref" : "VpcId" }
+      }
+    },
+
+    "IngressSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "FromPort": "22",
+        "ToPort": "22",
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0",
+        "GroupId": { "Ref": "SecurityGroup" }
+      }
+    },
+
+    "EgressAll": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0",
+        "GroupId": { "Ref": "SecurityGroup" }
+      }
+    },
+
+    "Cluster": {
+      "Type": "AWS::ECS::Cluster"
+    },
+
+    "Service": {
+      "Type": "AWS::ECS::Service",
+      "Properties" : {
+        "Cluster": { "Ref": "Cluster" },
+        "DesiredCount": 2,
+        "TaskDefinition" : { "Ref": "TaskDefinition" }
+      }
+    },
+
+    "TaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties" : {
+        "ContainerDefinitions" : [ 
+          {
+            "Name": "go-agent",
+            "Image": { "Ref": "DockerImage" },
+            "Essential": "true",
+            "Memory": 500,
+            "MountPoints": [
+              {
+                "ContainerPath": "/var/run/docker.sock",
+                "SourceVolume":   "var-run-docker-sock"
+              },
+            ],
+            "Environment": [
+              { "Name": "AWS_DEFAULT_REGION", "Value": "eu-central-1" },
+              { "Name": "GITHUB_PEM_KEY",     "Value": { "Ref": "GithubPemKey" } },
+              { "Name": "GO_SERVER",          "Value": { "Ref": "GoServerUrl" } },
+              { "Name": "RUN_MODE",           "Value": "live" }
+            ]
+          }
+        ],
+        "Volumes": [
+          { "Host": { "SourcePath": "/var/run/docker.sock" }, "Name": "var-run-docker-sock" }
+        ],
+        "Family": "go-agent"
+      }
+    }
+  },
+
+  "Outputs": {
+
+    "Cluster": {
+      "Description": "GoCD Agent ECS Cluster",
+      "Value": { "Ref": "Cluster" },
+      "Export": { "Name": { "Fn::Join": [ ":", [ { "Ref": "AWS::StackName" }, "Cluster" ] ] } }
+    }
+  }
+}
