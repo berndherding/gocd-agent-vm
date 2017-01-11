@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 shopt -s extglob
 
@@ -10,6 +10,9 @@ shopt -s extglob
 
 # shellcheck source=/dev/null
 . "$(dirname "${BASH_SOURCE[0]}")/inc/keys.inc"
+
+ERROR_createAgentCluster_createStack=1
+ERROR_createAgentCluster_waitStack=2
 
 
 
@@ -34,11 +37,12 @@ function createAgentCluster() {
     ParameterKey=EcsAuth,ParameterValue="$ecsAuth" \
     ParameterKey=EcsEmail,ParameterValue="$ecsEmail" \
     ParameterKey=GoServerUrl,ParameterValue="$goServerUrl" \
-    ParameterKey=GithubPemKey,ParameterValue="$(getGithubPrivateKey)" \
-  || return 1
+    ParameterKey=GithubPrivateKey,ParameterValue="$(getGithubPrivateKey)" \
+  || return $ERROR_createAgentCluster_createStack
 
   echo "*** please wait for create-stack to complete. this may take a few minutes."
-  aws cloudformation wait stack-create-complete --stack-name "$stackname" --output text || return 2
+  aws cloudformation wait stack-create-complete --stack-name "$stackname" --output text \
+  || return $ERROR_createAgentCluster_waitStack
 }
 
 
@@ -46,5 +50,5 @@ function createAgentCluster() {
 function destroyAgentCluster() {
   local stackname=$1
 
-  destroyStack "$stackname"  || return $?
+  destroyStack "$stackname" || return $?
 }

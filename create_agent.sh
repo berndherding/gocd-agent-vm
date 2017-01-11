@@ -3,10 +3,8 @@
 # shellcheck source=agent.inc
 . "$(dirname "${BASH_SOURCE[0]}")/agent.inc"
 
-STACKNAME=gocd-avm
+env=${1:-test}
 
-_GO_PIPELINE_COUNTER=-${GO_PIPELINE_COUNTER:-0}
+gocd_avm="$(getStackname "gocd-avm" "$env")"
 
-STACKNAME=$STACKNAME$_GO_PIPELINE_COUNTER
-
-createAgentCluster "${1:-$STACKNAME}"
+createAgentCluster "$gocd_avm"

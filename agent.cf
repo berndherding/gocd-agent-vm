@@ -23,7 +23,7 @@
     "GoServerUrl" : {
       "Type" :  "String"
     },
-    "GithubPemKey" : {
+    "GithubPrivateKey" : {
       "Type" :  "String",
       "NoEcho":  true
     }
@@ -125,9 +125,9 @@
             ],
             "Environment": [
               { "Name": "AWS_DEFAULT_REGION", "Value": "eu-central-1" },
-              { "Name": "GITHUB_PEM_KEY",     "Value": { "Ref": "GithubPemKey" } },
-              { "Name": "GO_SERVER",          "Value": { "Ref": "GoServerUrl" } },
-              { "Name": "RUN_MODE",           "Value": "live" }
+              { "Name": "ENABLE_GITHUB_PRIVATE_REPO_SUPPORT", "Value": "yes" },
+              { "Name": "GITHUB_PRIVATE_KEY", "Value": { "Ref": "GithubPrivateKey" } },
+              { "Name": "GO_SERVER", "Value": { "Ref": "GoServerUrl" } }
             ]
           }
         ],
