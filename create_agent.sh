@@ -3,8 +3,6 @@
 # shellcheck source=agent.inc
 . "$(dirname "${BASH_SOURCE[0]}")/agent.inc"
 
-STACK_SUFFIX=${1:-test}
+ENVLABEL=${1:-live}
 
-GOCD_AVM="$(getStackname "gocd-avm" "$STACK_SUFFIX")"
-
-createAgentCluster "$GOCD_AVM"
+createAgentCluster "$ENVLABEL"
