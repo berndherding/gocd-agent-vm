@@ -26,7 +26,7 @@ function createAgentCluster() {
   [ -z "$DOCKER_HUB_PASSWORD" ] && return $ERROR_noDockerHubPassword
   [ -z "$DOCKER_HUB_EMAIL" ]    && return $ERROR_noDockerHubEmail
 
-  gocd_avm="$(getStackname "gocd-avm" "$label")"
+  gocd_avm="$(getStackname "avm" "$label")"
 
   vpcId=$(getDefaultVpcId)
   imageId=$(getImageId)
@@ -58,6 +58,6 @@ function createAgentCluster() {
 
 function destroyAgentCluster() {
   local label=$1
-  gocd_avm="$(getStackname "gocd-avm" "$label")"
+  gocd_avm="$(getStackname "avm" "$label")"
   destroyStack "$gocd_avm" || return $?
 }

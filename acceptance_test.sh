@@ -3,16 +3,14 @@
 # shellcheck source=agent.inc
 . "$(dirname "${BASH_SOURCE[0]}")/agent.inc"
 
-env=test
-
-AGENT_STACKNAME="$(getStackname "gocd-avm" "$env")"
+ENVLABEL=test
 
 SHUNIT=$(which shunit)
 
 
 
 function testCreateAgentCluster() {
-  createAgentCluster "$AGENT_STACKNAME"
+  createAgentCluster "$ENVLABEL"
   assertEquals "createAgentCluster failed" 0 $?
 }
 
@@ -24,7 +22,7 @@ function testCreateAgentCluster() {
 
 
 function testDestroyAgentCluster() {
-  destroyAgentCluster "$AGENT_STACKNAME"
+  destroyAgentCluster "$ENVLABEL"
   assertEquals "destroyAgentCluster failed" 0 $?
 }
 
