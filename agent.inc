@@ -28,6 +28,7 @@ function createAgentCluster() {
 
   gocd_avm="$(getStackname "avm" "$label")"
 
+  release=$(getRelease)
   vpcId=$(getDefaultVpcId)
   imageId=$(getImageId)
   dockerImage="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/gocdAgentImageName)"
@@ -40,6 +41,7 @@ function createAgentCluster() {
   --stack-name "$gocd_avm" \
   --template-body file://"$(dirname "${BASH_SOURCE[0]}")/agent.cf" \
   --parameters \
+    ParameterKey=Release,ParameterValue="$release" \
     ParameterKey=VpcId,ParameterValue="$vpcId" \
     ParameterKey=ImageId,ParameterValue="$imageId" \
     ParameterKey=DockerImage,ParameterValue="$dockerImage" \

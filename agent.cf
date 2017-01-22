@@ -4,29 +4,14 @@
   "AWSTemplateFormatVersion": "2010-09-09",
 
   "Parameters" : {
-    "VpcId" : {
-      "Type" :  "String"
-    },
-    "ImageId" : {
-      "Type" :  "String"
-    },
-    "DockerImage" : {
-      "Type" :  "String"
-    },
-    "EcsAuth" : {
-      "Type":   "String",
-      "NoEcho" : true
-    },
-    "EcsEmail" : {
-      "Type" :  "String"
-    },
-    "GoServerUrl" : {
-      "Type" :  "String"
-    },
-    "GithubPrivateKey" : {
-      "Type" :  "String",
-      "NoEcho":  true
-    }
+    "Release":          { "Type": "String" }
+    "VpcId":            { "Type": "String" },
+    "ImageId":          { "Type": "String" },
+    "DockerImage":      { "Type": "String" },
+    "EcsAuth":          { "Type": "String", "NoEcho" : true },
+    "EcsEmail":         { "Type": "String" },
+    "GoServerUrl":      { "Type": "String" },
+    "GithubPrivateKey": { "Type": "String", "NoEcho":  true }
   },
 
   "Resources": {
@@ -59,6 +44,10 @@
                 "ECS_CLUSTER=$ECS_CLUSTER\n",
                 "ECS_ENGINE_AUTH_TYPE=dockercfg\n",
                 "ECS_ENGINE_AUTH_DATA={\"https://index.docker.io/v1/\":{\"auth\":\"$ECS_AUTH\",\"email\":\"$ECS_EMAIL\"}}\n",
+                "EOF",
+
+                "cat <<EOF > /release/vm",
+                { "Fn::Join": [ "=", [ "VM_RELEASE", { "Ref": "Release" } ] ] },
                 "EOF"
               ]
             ]
@@ -119,9 +108,13 @@
             "Memory": 500,
             "MountPoints": [
               {
+                "ContainerPath": "/release",
+                "SourceVolume":   "release"
+              },
+              {
                 "ContainerPath": "/var/run/docker.sock",
                 "SourceVolume":   "var-run-docker-sock"
-              },
+              }
             ],
             "Environment": [
               { "Name": "AWS_DEFAULT_REGION", "Value": "eu-central-1" },
@@ -132,6 +125,7 @@
           }
         ],
         "Volumes": [
+          { "Host": { "SourcePath": "/release" }, "Name": "release" },
           { "Host": { "SourcePath": "/var/run/docker.sock" }, "Name": "var-run-docker-sock" }
         ],
         "Family": "go-agent"
