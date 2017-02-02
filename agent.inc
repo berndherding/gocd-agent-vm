@@ -8,9 +8,6 @@ shopt -s extglob
 [ ! -f "$(dirname "${BASH_SOURCE[0]}")/target/imageId" ] \
   && ln -s "$(dirname "${BASH_SOURCE[0]}")/../gocd-base-ami/target" "$(dirname "${BASH_SOURCE[0]}")/target"
 
-[ ! -f "$(dirname "${BASH_SOURCE[0]}")/target/gocdAgentImageName" ] \
-  && ln -s "$(dirname "${BASH_SOURCE[0]}")/../gocd-agent-image/target/gocdAgentImageName" "$(dirname "${BASH_SOURCE[0]}")/target/gocdAgentImageName"
-
 
 
 # shellcheck source=/dev/null
