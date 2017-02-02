@@ -7,11 +7,11 @@
     "Release":          { "Type": "String" },
     "VpcId":            { "Type": "String" },
     "ImageId":          { "Type": "String" },
-    "DockerImage":      { "Type": "String" },
     "EcsAuth":          { "Type": "String", "NoEcho" : true },
     "EcsEmail":         { "Type": "String" },
-    "GoServerUrl":      { "Type": "String" },
-    "GithubPrivateKey": { "Type": "String", "NoEcho":  true }
+    "DockerImage":      { "Type": "String", "Default": "" },
+    "GoServerUrl":      { "Type": "String", "Default": "" },
+    "GithubPrivateKey": { "Type": "String", "Default": "", "NoEcho":  true }
   },
 
   "Resources": {
