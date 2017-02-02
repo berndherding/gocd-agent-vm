@@ -22,7 +22,7 @@
         "AvailabilityZone": "eu-central-1b",
         "IamInstanceProfile": "ecsInstanceRole",
         "ImageId": { "Ref": "ImageId" },
-        "InstanceType": "t2.small",
+        "InstanceType": "t2.medium",
         "KeyName": "gocd",
         "Monitoring": "true",
         "SecurityGroupIds": [ { "Ref": "SecurityGroup" } ],
@@ -60,76 +60,15 @@
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Go Agent",
-        "VpcId": { "Ref" : "VpcId" }
-      }
-    },
-
-    "IngressSsh": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "FromPort": "22",
-        "ToPort": "22",
-        "IpProtocol": "tcp",
-        "CidrIp": "0.0.0.0/0",
-        "GroupId": { "Ref": "SecurityGroup" }
-      }
-    },
-
-    "EgressAll": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties": {
-        "IpProtocol": "-1",
-        "CidrIp": "0.0.0.0/0",
-        "GroupId": { "Ref": "SecurityGroup" }
+        "VpcId": { "Ref" : "VpcId" },
+        "SecurityGroupEgress": [
+          { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" }
+        ]
       }
     },
 
     "Cluster": {
       "Type": "AWS::ECS::Cluster"
-    },
-
-    "Service": {
-      "Type": "AWS::ECS::Service",
-      "Properties" : {
-        "Cluster": { "Ref": "Cluster" },
-        "DesiredCount": 2,
-        "TaskDefinition" : { "Ref": "TaskDefinition" }
-      }
-    },
-
-    "TaskDefinition": {
-      "Type": "AWS::ECS::TaskDefinition",
-      "Properties" : {
-        "ContainerDefinitions" : [ 
-          {
-            "Name": "go-agent",
-            "Image": { "Ref": "DockerImage" },
-            "Essential": "true",
-            "Memory": 500,
-            "MountPoints": [
-              {
-                "ContainerPath": "/release",
-                "SourceVolume":   "release"
-              },
-              {
-                "ContainerPath": "/var/run/docker.sock",
-                "SourceVolume":   "var-run-docker-sock"
-              }
-            ],
-            "Environment": [
-              { "Name": "AWS_DEFAULT_REGION", "Value": "eu-central-1" },
-              { "Name": "ENABLE_GITHUB_PRIVATE_REPO_SUPPORT", "Value": "yes" },
-              { "Name": "GITHUB_PRIVATE_KEY", "Value": { "Ref": "GithubPrivateKey" } },
-              { "Name": "GO_SERVER", "Value": { "Ref": "GoServerUrl" } }
-            ]
-          }
-        ],
-        "Volumes": [
-          { "Host": { "SourcePath": "/release" }, "Name": "release" },
-          { "Host": { "SourcePath": "/var/run/docker.sock" }, "Name": "var-run-docker-sock" }
-        ],
-        "Family": "go-agent"
-      }
     }
   },
 
