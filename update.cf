@@ -19,7 +19,7 @@
         "ContainerDefinitions" : [ 
           {
             "Name": "go-agent",
-            "Image": { "Ref": "DockerImage" },
+            "Image": { "Ref": "GoCDAgentImage" },
             "Essential": "true",
             "Memory": 800,
             "MemoryReservation": 400,

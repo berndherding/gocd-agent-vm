@@ -9,7 +9,7 @@
     "ImageId":          { "Type": "String" },
     "EcsAuth":          { "Type": "String", "NoEcho" : true },
     "EcsEmail":         { "Type": "String" },
-    "DockerImage":      { "Type": "String", "Default": "" },
+    "GoCDAgentImage":   { "Type": "String", "Default": "" },
     "GoServerUrl":      { "Type": "String", "Default": "" },
     "GithubPrivateKey": { "Type": "String", "Default": "", "NoEcho":  true }
   },

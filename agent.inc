@@ -113,15 +113,15 @@ function updateAgentCluster() {
 
   release="$(cat "$(dirname "${BASH_SOURCE[0]}")/target/release" 2> /dev/null)"
 
-  dockerImage="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/dockerImageName 2> /dev/null)"
-  [ -n "$GOCD_AGENT_IMAGE_TAG" ] && dockerImage="$DOCKER_HUB_USERNAME/gocd-agent:$GOCD_AGENT_IMAGE_TAG"
+  gocdAgentImage="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/gocdAgentImageName 2> /dev/null)"
+  [ -n "$GOCD_AGENT_IMAGE_TAG" ] && gocdAgentImage="$DOCKER_HUB_USERNAME/gocd-agent:$GOCD_AGENT_IMAGE_TAG"
 
   goServerUrl="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/publicIp)"
   [ -n "$GO_SERVER_URL" ] && goServerUrl="$GO_SERVER_URL"
 
   echo "* release: $release"
   echo "* imageId: $imageId"
-  echo "* gocd agent image: $dockerImage"
+  echo "* gocd agent image: $gocdAgentImage"
   echo "* go server url: $goServerUrl"
 
   "$(dirname "${BASH_SOURCE[0]}")/create_update_template.sh"
@@ -136,8 +136,8 @@ function updateAgentCluster() {
     ParameterKey=ImageId,ParameterValue="$imageId"   \
     ParameterKey=EcsAuth,ParameterValue="$ecsAuth"   \
     ParameterKey=EcsEmail,ParameterValue="$ecsEmail" \
-    ParameterKey=DockerImage,ParameterValue="$dockerImage" \
     ParameterKey=GoServerUrl,ParameterValue="$goServerUrl" \
+    ParameterKey=GoCDAgentImage,ParameterValue="$gocdAgentImage" \
     ParameterKey=GithubPrivateKey,ParameterValue="$(getGithubPrivateKey)" \
   || return $ERROR_updateAgentCluster_updateStack
 
