@@ -1,0 +1,67 @@
+{
+  "Description": "GoCD Agent Swarm",
+
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Parameters" : {
+    "Release":          { "Type": "String" },
+    "VpcId":            { "Type": "String" },
+    "ImageId":          { "Type": "String" },
+    "DockerImage":      { "Type": "String" },
+    "GoServerUrl":      { "Type": "String" },
+    "GithubPrivateKey": { "Type": "String", "NoEcho":  true }
+  },
+
+  "Resources": {
+
+    "Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "eu-central-1b",
+        "IamInstanceProfile": "ecsInstanceRole",
+        "ImageId": { "Ref": "ImageId" },
+        "InstanceType": "t2.small",
+        "KeyName": "gocd",
+        "Monitoring": "true",
+        "SecurityGroupIds": [ { "Ref": "SecurityGroup" } ],
+        "Tags": [
+          { "Key": "Name", "Value": { "Ref": "AWS::StackName" } }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [ "",
+              [
+                "#!/bin/bash\n",
+
+                "cat <<EOF > /release/vm",
+                { "Fn::Join": [ "=", [ "VM_RELEASE", { "Ref": "Release" } ] ] },
+                "EOF"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+    "SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Go Agent",
+        "VpcId": { "Ref" : "VpcId" },
+        "SecurityGroupIngress": [
+          { "FromPort": "22",   "ToPort": "22",   "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0" },
+          { "FromPort": "2377", "ToPort": "2377", "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0" },
+          { "FromPort": "4789", "ToPort": "4789", "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0" },
+          { "FromPort": "4789", "ToPort": "4789", "IpProtocol": "udp", "CidrIp": "0.0.0.0/0" },
+          { "FromPort": "7946", "ToPort": "7946", "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0" },
+          { "FromPort": "7946", "ToPort": "7946", "IpProtocol": "udp", "CidrIp": "0.0.0.0/0" },
+          { "FromPort": "8154", "ToPort": "8154", "IpProtocol": "tcp", "CidrIp": "0.0.0.0/0" }
+        ],
+        "SecurityGroupEgress": [
+          { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" }
+        ]
+      }
+    }
+  }
+}
+
