@@ -37,6 +37,9 @@ function createAgentSwarm() {
   vpcId=$(getDefaultVpcId)
   imageId=$(getImageId)
 
+  gocdAgentImage="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/gocdAgentImageName 2> /dev/null)"
+  [ -n "$GOCD_AGENT_IMAGE_TAG" ] && gocdAgentImage="$DOCKER_HUB_USERNAME/gocd-agent:$GOCD_AGENT_IMAGE_TAG"
+
   aws cloudformation create-stack \
   --stack-name "$stack" \
   --template-body file://"$(dirname "${BASH_SOURCE[0]}")/swarm.cf" \
@@ -44,7 +47,7 @@ function createAgentSwarm() {
     ParameterKey=Release,ParameterValue="$release" \
     ParameterKey=VpcId,ParameterValue="$vpcId"     \
     ParameterKey=ImageId,ParameterValue="$imageId" \
-    ParameterKey=DockerImage,ParameterValue="$dockerImage" \
+    ParameterKey=DockerImage,ParameterValue="$gocdAgentImage" \
     ParameterKey=GoServerUrl,ParameterValue="$goServerUrl" \
     ParameterKey=GithubPrivateKey,ParameterValue="$(getGithubPrivateKey)" \
   || return $ERROR_createAgentSwarm_createStack
