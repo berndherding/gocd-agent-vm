@@ -61,6 +61,7 @@ function createAgentSwarm() {
 
 function createAgentCluster() {
   local env=$1
+  local instanceType=$2
 
   [ -z "$DOCKER_HUB_USERNAME" ] && return $ERROR_noDockerHubUsername
   [ -z "$DOCKER_HUB_PASSWORD" ] && return $ERROR_noDockerHubPassword
@@ -89,14 +90,16 @@ function createAgentCluster() {
     ParameterKey=ImageId,ParameterValue="$imageId"   \
     ParameterKey=EcsAuth,ParameterValue="$ecsAuth"   \
     ParameterKey=EcsEmail,ParameterValue="$ecsEmail" \
-  || return $ERROR_createAgentCluster_createStack
+    ParameterKey=InstanceType,ParameterValue="$instanceType" \
+  > /dev/null || return $ERROR_createAgentCluster_createStack
 
   echo "* waiting for $stack to complete. this may take a few minutes."
   aws cloudformation wait stack-create-complete --stack-name "$stack" --output text \
   || return $ERROR_createAgentCluster_waitStack
 
-  echo "$stack"   > "$(dirname "${BASH_SOURCE[0]}")/target/gocdAvm"
-  echo "$release" > "$(dirname "${BASH_SOURCE[0]}")/target/release"
+  echo "$stack"        > "$(dirname "${BASH_SOURCE[0]}")/target/gocdAvm"
+  echo "$release"      > "$(dirname "${BASH_SOURCE[0]}")/target/release"
+  echo "$instanceType" > "$(dirname "${BASH_SOURCE[0]}")/target/instanceType"
 }
 
 
@@ -115,6 +118,7 @@ function updateAgentCluster() {
   ecsEmail="$DOCKER_HUB_EMAIL"
 
   release="$(cat "$(dirname "${BASH_SOURCE[0]}")/target/release" 2> /dev/null)"
+  instanceType="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/instanceType 2> /dev/null)"
 
   gocdAgentImage="$(cat "$(dirname "${BASH_SOURCE[0]}")"/target/gocdAgentImageName 2> /dev/null)"
   [ -n "$GOCD_AGENT_IMAGE_TAG" ] && gocdAgentImage="$DOCKER_HUB_USERNAME/gocd-agent:$GOCD_AGENT_IMAGE_TAG"
@@ -140,9 +144,10 @@ function updateAgentCluster() {
     ParameterKey=EcsAuth,ParameterValue="$ecsAuth"   \
     ParameterKey=EcsEmail,ParameterValue="$ecsEmail" \
     ParameterKey=GoServerUrl,ParameterValue="$goServerUrl" \
+    ParameterKey=InstanceType,ParameterValue="$instanceType"     \
     ParameterKey=GoCDAgentImage,ParameterValue="$gocdAgentImage" \
     ParameterKey=GithubPrivateKey,ParameterValue="$(getGithubPrivateKey)" \
-  || return $ERROR_updateAgentCluster_updateStack
+  > /dev/null || return $ERROR_updateAgentCluster_updateStack
 
   echo "*** please wait for create-stack to complete. this may take a few minutes."
   aws cloudformation wait stack-update-complete --stack-name "$stack" --output text \

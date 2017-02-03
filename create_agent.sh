@@ -3,6 +3,7 @@
 # shellcheck source=agent.inc
 . "$(dirname "${BASH_SOURCE[0]}")/agent.inc"
 
-ENVLABEL=${1:-live}
+ENV=${1:-live}
+INSTANCE_TYPE=${2:-t2.small}
 
-createAgentCluster "$ENVLABEL"
+createAgentCluster "$ENV" "$INSTANCE_TYPE" || exit $?
